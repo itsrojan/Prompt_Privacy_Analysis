@@ -1,2 +1,2 @@
 # Prompt_Privacy_Analysis
-ChatGPrompt_Privacy_Analysis
+ChatGPT_Prompt_Privacy_Analysis
