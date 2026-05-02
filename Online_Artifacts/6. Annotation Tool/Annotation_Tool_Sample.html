@@ -1,0 +1,1679 @@
+<script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
+<head>
+
+    <link href="https://s3.amazonaws.com/mturk-public/bs30/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <style type="text/css">
+        .PromptPanel {
+            width: 100%;
+        }
+        
+        /* Style for the Prompt Box (Chat Bubble on the Left) */
+        .PromptBox {
+            border: 2px solid #000; /* Thick border for better visibility */
+            padding: 15px; /* Padding for better spacing */
+            margin-bottom: 10px; /* Space between elements */
+            text-align: left; /* Left alignment of text inside the box */
+            width: 60%; /* Adjust width for bubbles */
+            border-radius: 20px; /* Rounded corners for the bubble */
+            background-color: #f0f0f0; /* Light gray background for the prompt bubble */
+            margin-left: 0; /* Align left for prompt */
+            margin-right: auto; /* Push it to the left */
+            align-self: flex-start; /* Align the prompt bubble to the left */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a modern look */
+        }
+        
+        /* Style for the Response Box (Chat Bubble on the Right) */
+        .ResponseBox {
+            border: 2px solid #000; /* Thick border for better visibility */
+            padding: 15px; /* Padding for better spacing */
+            margin-bottom: 10px; /* Space between elements */
+            text-align: left; /* Left alignment of text inside the box */
+            width: 60%; /* Adjust width for bubbles */
+            border-radius: 20px; /* Rounded corners for the bubble */
+            background-color: #e0f7fa; /* Light blue background for the response bubble */
+            margin-left: auto; /* Align right for response */
+            margin-right: 0; /* Align right for response */
+            align-self: flex-end; /* Align the response bubble to the right */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a modern look */
+        }
+        
+        /* Style for the Header (Prompt and Response labels) */
+        .header {
+            
+            font-weight: bold; /* Make the header text bold */
+            margin-bottom: 8px; /* Space below the header */
+            text-transform: uppercase; /* Make the text uppercase */
+            color: #333; /* Dark color for better visibility */
+            border-bottom: 2px solid #000; /* Underline for the header */
+            padding-bottom: 5px; /* Space between the title and content */
+        }
+        
+        /* Style for the content (Prompt and Response text) */
+        .content {
+            
+            line-height: 1.4; /* Adjust line height for better readability */
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .popup-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 400px;
+            text-align: center;
+        }
+
+        .coded {
+            color: black;
+            padding: 4px;
+            border-radius: 5px;
+        }
+
+        /* info */
+        .coded_e {
+            background-color: #f172e0;
+            color: black;
+            padding: 4px;
+        }
+        .coded_i {
+            background-color: #eda058;
+            color: black;
+            padding: 4px;
+        }
+        .coded_s {
+            background-color: #54ef66;
+            color: black;
+            padding: 4px;
+        }
+        .coded_t {
+            background-color: #00e5ff;
+            color: black;
+            padding: 4px;
+        }
+
+        .currentInfo {
+            border: thin solid #450c39;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+
+        table.table2, td.table2 {
+            border: 0px;
+        }
+
+        p {
+            font-family: Verdana, Geneva, sans-serif;
+            color: #333333;
+            font-size: 0.9em
+        }
+
+        div {
+            padding: 0;
+            margin: 0;
+        }
+
+        .old {
+            opacity: 50%;
+        }
+
+        .old span {
+            opacity: 100%;
+        }
+
+        .hideable {
+            display: none;
+        }
+
+        .box {
+            margin: 10px;
+        }
+
+        .form-group {
+            height: auto;
+        }
+
+        .primaryContainer {
+            padding: 20px;
+            max-width: 75%;
+            margin: auto;
+        }
+
+        .instructions {
+            margin: 20px;
+            text-align: justify;
+        }
+
+        .instructionKeyParagraph {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .instructionKeyParagraph table{
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .Prompt {
+            font-size: 15px;
+            cursor: default;
+        }
+        .ResponsePanel {
+            text-align: right;
+            font-size: 13px;
+        }
+        .Presponse {
+            font-size: 15px;
+            cursor: default;
+        }
+
+        .panel {
+            font-family: Verdana, Geneva, sans-serif;
+        }
+
+        .panel-heading {
+            text-align: center;
+            cursor: pointer;
+            align-items: center;
+        }
+        .history-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 15px;
+            max-width: 1200px;
+        }
+
+        .history-column {
+            flex: 1 1 120px;
+            max-width: 200px;
+            background-color: #f1f1f1;
+            border-radius: 6px;
+            padding: 5px;
+            font-size: 13px;
+            word-break: break-word;   /* wrap inside long words */
+            hyphens: auto;            /* optional: soft hyphens where possible */
+        }
+
+        .history-column ul {
+            list-style-type: disc;
+            margin: 0;
+            padding-left: 16px;
+        }
+
+        .history-column li {
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+        .v-space li {
+        line-height: 1.8; /* Adjust this value to increase or decrease the line spacing */
+        }
+
+    </style>
+
+
+    <script type='text/javascript'>
+
+        const DEBUG = true;
+
+        /* intial key assignment for the different info category */
+        let keybinds = {
+            CATEGORY: ["e","i","s","t"]
+        }
+
+        /* initialize the variable */
+        /* state stack has the annotation until new info is selected */
+        let PromptStateStack = []; // snapshots of the annotation statement after every new annotation for prompt
+        let ResponseStateStack = []; // snapshots of the annotation statement after every new annotation for response
+        let infoStack = []; // history of prompts/response (list of last annotated section)
+        let PromptInfoAnnotated = []; // history of prompt info
+        let ResponseInfoAnnotated = []; // history of response info
+        let TotalInfoAnnotated = []; // history of response info
+        let PreviousInfoTypeName ="";
+        let choice=""
+
+        let infoName = ""; // current info
+
+        const historySet = new Set(); // to store unique values (history)
+
+        /**
+         * Prints variable information to the console. Only prints if DEBUG is true.
+         * @param msg Optional string to print.
+         */
+        function debugPrint(msg) {
+            if (!DEBUG)
+                return
+            if (msg)
+                console.log(msg);
+            
+        }
+
+        /* This adds the info-type to the history variable if it is not already present and call the updateHistoryDisplay function */
+         function addToHistory()
+         {
+            const value = document.querySelector('input[name="infoTypeText"]').value.trim().toLowerCase();
+            if (value && !historySet.has(value)) {
+            historySet.add(value);
+            updateHistoryDisplay();
+            }
+        }
+
+        /* This updates the list for displaying annotated info-type history */
+        function updateHistoryDisplay() {
+            const sorted = [...historySet].sort((a,b) => a.localeCompare(b));
+            const perCol = 3;
+            historyContainer.innerHTML = '';
+
+            for (let i = 0; i < sorted.length; i += perCol) {
+            const column = document.createElement('div');
+            column.className = 'history-column';
+            const ul = document.createElement('ul');
+
+            sorted.slice(i, i + perCol).forEach(text => {
+                const li = document.createElement('li');
+                li.textContent = text;
+                ul.appendChild(li);
+            });
+
+            column.appendChild(ul);
+            historyContainer.appendChild(column);
+            }
+        }
+
+        /*stores the current state of the Prompt*/
+        function PromptPushState() {
+            let PromptHtml = document.getElementById('Prompt').innerHTML;
+            let PromptHtml123 = document.getElementById('Prompt');
+            PromptStateStack.push(PromptHtml);
+            debugPrint("# PUSHED STATE PROMPT#");
+        }
+        /*stores the current state of the Response*/
+        function ResponsePushState() {
+            let ResponseHtml = document.getElementById('Response').innerHTML;
+            let ResponseHtml123 = document.getElementById('Response');
+            ResponseStateStack.push(ResponseHtml);
+            debugPrint("# PUSHED STATE RESPONSE#");
+        }
+
+
+        /**
+         * Returns the last action from infoStack. Does not remove it from the stack.
+         * @returns {*}
+         */
+        function getLastAction() {
+            return infoStack[infoStack.length - 1];
+        }
+
+        /**
+         * Pops the previous state of the paragraph from the stack. This replaces the annotation paragraph.
+         */
+         function PromptPopState(text) {
+            // never pop the original state
+            if(PromptStateStack.length===1 && infoStack[infoStack.length-2]=="response")
+            {
+                console.log("Pop: Prompt State Stack = 0");
+                document.getElementById('Prompt').innerHTML = PromptStateStack[0];
+                if(infoStack[infoStack.length-2]=="response")
+                {
+                    let b = 2; //dummy variable
+                }
+                else
+                {return true;}
+            }
+            else if (PromptStateStack.length === 1)
+            {
+                console.log("Pop Response State Stack === 1 return false");
+                return false;
+            }
+            // if removing a info, set current info to the previous
+            else if(text=="dont")
+            {
+                console.log("INSIDE DONT")
+                let c = 3;
+            }
+            else if (getLastAction() === "prompt" && infoStack[infoStack.length-2]=="response")
+            {
+                if (ResponseInfoAnnotated.length<1)
+                {
+                    setinfoName("");
+                }
+                else
+                {
+                    setinfoName(ResponseInfoAnnotated[ResponseInfoAnnotated.length-1]);
+                    console.log("POPPING PROMPT INSIDE LAST ACTION RESPONSE")
+                    PromptInfoAnnotated.pop();
+                    
+                }
+                
+            }
+            else
+            {
+                console.log("BEFORE pop promptinfoannotated: "+ PromptInfoAnnotated);
+                if (PromptInfoAnnotated.length > 1)
+                    setinfoName(PromptInfoAnnotated[PromptInfoAnnotated.length - 2]);
+                else
+                    setinfoName("");
+                PromptInfoAnnotated.pop();
+                console.log("BEFORE pop promptinfoannotated: "+ PromptInfoAnnotated);
+            }
+            if(PromptStateStack.length===1)
+            {
+                document.getElementById('Prompt').innerHTML = PromptStateStack[0];
+            }
+            else{
+                document.getElementById('Prompt').innerHTML = PromptStateStack.pop();
+            }
+            
+            resetForm();
+            if(text=="dont")
+            {
+                let a = 1; //dummy variable
+            }
+            else
+            {
+                infoStack.pop();
+            }
+            console.log("RESPONSEINFOANNOTATED: "+ ResponseInfoAnnotated);
+            console.log("PROMPTINFOANNOTATED: "+ PromptInfoAnnotated);
+            debugPrint("# PROMPT POPPED STATE #");
+        }
+        function ResponsePopState(text) {
+            // never pop the original state
+            if (ResponseStateStack.length === 1 && infoStack[infoStack.length-2]=="prompt")
+            {
+                console.log("Pop: Response State Stack = 0");
+                document.getElementById('Response').innerHTML = ResponseStateStack[0];
+                if(infoStack[infoStack.length-2]=="prompt")
+                {
+                    let b = 2; //dummy variable
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else if (ResponseStateStack.length === 1)
+            {
+                console.log("Pop Response State Stack === 1 return false");
+                return false;
+            }
+            /* if removing a info, set current info to the previous */
+            if(text=="dont")
+            {
+                let d = 4; //dummy variable
+            }
+            else if (getLastAction() === "response" && infoStack[infoStack.length-2]=="prompt")
+            {
+                if (PromptInfoAnnotated.length<1)
+                {
+                    setinfoName("");
+                }
+                else
+                {
+                    setinfoName(PromptInfoAnnotated[PromptInfoAnnotated.length-1]);
+                    console.log("POPPING RESPONSE INSIDE LAST ACTION PROMPT")
+                    ResponseInfoAnnotated.pop();
+                }
+                
+            }
+            else
+            {
+                console.log("BEFORE pop responseinfoannotated: "+ ResponseInfoAnnotated);
+                if (ResponseInfoAnnotated.length > 1)
+                    setinfoName(ResponseInfoAnnotated[ResponseInfoAnnotated.length - 2]);
+                else
+                    setinfoName("");
+                ResponseInfoAnnotated.pop();
+                console.log("AFTER pop responseinfoannotated: "+ ResponseInfoAnnotated);
+            }
+            //console.log("popping response and setting previous")
+            if(ResponseStateStack.length===1)
+            {
+                document.getElementById('Response').innerHTML = ResponseStateStack[0];
+            }
+            else
+            {
+                document.getElementById('Response').innerHTML = ResponseStateStack.pop();
+            }
+            
+            resetForm();
+            if(text=="dont")
+            {
+                let a = 1;
+            }
+            else
+            {
+                
+                infoStack.pop();
+            }
+            console.log("RESPONSEINFOANNOTATED: "+ ResponseInfoAnnotated);
+            console.log("PROMPTINFOANNOTATED: "+ PromptInfoAnnotated);
+            debugPrint("# PROMPT POPPED STATE #");
+        }
+ 
+        function checkBrowser() {
+            if (typeof window.getSelection != "undefined") {
+                try {
+                    document.getElementById('selector_task').style.display = "block";
+                } catch (error) {
+                    console.warn("#selector_task not found.");
+                }
+            } else {
+                document.getElementById('typing_task').style.display = "block";
+            }
+        }
+
+        /**
+         * Disables or enables a <form>.
+         * @param formId ID of the form.
+         * @param disable true -> disabled, false -> enabled
+         */
+         function setDisabledForm(formId, disable) {
+            let f = document.getElementById(formId), s, opacity;
+            s = f.style;
+            opacity = disable ? '40' : '100';
+            s.opacity = s.MozOpacity = s.KhtmlOpacity = '' + (opacity / 100);
+            s.filter = 'alpha(opacity=' + opacity + ')';
+            for (let i = 0; i < f.length; i++) f[i].disabled = disable;
+        }
+
+        function setinfoName(text = "") {
+            infoName = text;
+            document.getElementById("labelTitle").innerText = "[" + text + "]";
+        }
+
+        /* replace the selected span and add the new annotation information - called from selectInfo (for prompt) */
+        function PromptReplaceRange(range, node) {
+            let replaceMe = range.cloneContents().textContent.trim();
+            //console.log("REPLACEME: ",replaceMe );
+            range.insertNode(node);
+            node.parentElement.classList.remove("old");
+            let statement = document.getElementById('Prompt');
+            //console.log(statement);
+            statement.outerHTML = statement.outerHTML.replace(replaceMe + '</span>' + replaceMe, replaceMe + '</span>');
+        }
+        /* replace the selected span and add the new annotation information - called from selectInfo (for response) */
+        function ResponseReplaceRange(range, node) {
+            //console.log("DUPLICATING RESPONSE")
+            let replaceMe = range.cloneContents().textContent.trim();
+            range.insertNode(node);
+            node.parentElement.classList.remove("old");
+            let statement = document.getElementById('Response');
+            statement.outerHTML = statement.outerHTML.replace(replaceMe + '</span>' + replaceMe, replaceMe + '</span>');
+        }
+
+       
+        /* this function is called when we have a info annotation made */
+        function selectInfo(e) {
+            //console.log("infoStack: "+infoStack);
+            let obj = window.event ? event : e;
+            let unicode = obj.charCode ? obj.charCode : obj.keyCode;
+            let key = String.fromCharCode(unicode).toLowerCase();
+
+            let selection = window.getSelection();
+            
+            //console.log("Printing Selection");
+            //console.log(selection);
+            //console.log(infoStack);
+            if(PreviousInfoTypeName=="")
+                    {
+                        PreviousInfoTypeName = document.querySelector('input[name="infoTypeText"]').value.trim();
+                        //console.log("PreviousInfoTypeName inside setter: "+PreviousInfoTypeName)
+                    }
+            
+            if (keybinds["CATEGORY"].includes(key) && typeof selection != "undefined" && document.activeElement.id === "Prompt") {
+                addToHistory();
+                //console.log("INSIDE PROMPT SELECT INFO")
+                if (infoStack[infoStack.length-1]=='response' && ValidateInfoTypetext("dont show"))
+                {
+                    //console.log("inside response1 setter");
+                    let span = document.getElementById("response-annotation-" + ResponseInfoAnnotated.length);
+                    span.setAttribute("response-info-type", PreviousInfoTypeName);
+                    ResponsePushState();
+                }
+                if ((PromptInfoAnnotated.length) && !completeInfo())
+                {
+                    //console.log("rejected in prompt event selection complete info validation");
+                    return false;
+                }
+                
+                //console.log("AFTER VALIDATION")
+                if (infoStack.length>=1)
+                {
+                    
+                    if(!ValidateInfoTypetext())
+                    {
+                        //console.log("rejected in response event selection info stack check");
+                        return false;
+                    }
+                        
+                }
+                    
+                resetForm();
+                
+                if (selection.rangeCount) {
+                    
+                    let range = selection.getRangeAt(0);
+                    
+                    let start_node = range.startContainer.parentNode;
+                    let end_node = range.endContainer.parentNode;
+                    //console.log(start_node);
+                    //console.log(end_node);
+                    
+                    if (!PromptValidateContainer(start_node) || !PromptValidateContainer(end_node)) {
+                        if (typeof selection == "undefined") {
+                            selection.removeAllRanges();
+                        } else {
+                            selection.empty();
+                        }
+                        return;
+                    }
+
+                    /* need index after this since we adjust the range here? */
+                    adjustStartOffset(range);
+                    adjustEndOffset(range);
+
+                    /* Which block are we in? */
+                    const rootEl   = document.activeElement.id === "Prompt"
+                                    ? document.getElementById("Prompt")
+                                    : document.getElementById("Response");
+
+                    /* Compute indices BEFORE we mutate the DOM */
+                    const startIdx = charOffset(rootEl, range.startContainer, range.startOffset);
+                    const endIdx   = charOffset(rootEl, range.endContainer, range.endOffset);   // exclusive
+
+                    //const tokens = getTokenMap(rootEl);
+
+                    /* Token indices that match word_tokenize() */
+                    const pTokens  = getWordTokenMap(rootEl);
+                    const startTok = pTokens.findIndex(t => startIdx >= t.start && startIdx < t.end);
+                    const endTok   = pTokens.findIndex(t => (endIdx - 1) >= t.start && (endIdx - 1) < t.end);
+
+
+                    let span = document.createElement("span");
+                    let text = extractText(range.cloneContents());
+                    //console.log("TEXT: ",text )
+                    let node = document.createTextNode(text);
+                    span.appendChild(node);
+                    //console.log("RANGE:", range);
+                    setinfoName(text);
+                    console.log("PROMPT LEN",PromptInfoAnnotated.length)
+                    document.querySelectorAll('[infoid="' + PromptInfoAnnotated.length + '"]').forEach(el => el.classList.add("old"));
+                    document.querySelectorAll('[infoid="' + PromptInfoAnnotated.length + '"]').forEach(el => el.classList.remove("currentInfo"));
+                    document.querySelectorAll('[infoid="' + ResponseInfoAnnotated.length + '"]').forEach(el => el.classList.add("old"));
+                    document.querySelectorAll('[infoid="' + ResponseInfoAnnotated.length + '"]').forEach(el => el.classList.remove("currentInfo"));
+                    console.log("pushing: "+infoName+" in PROMPT-INFO-annotated");
+                    PromptInfoAnnotated.push(infoName);
+                    TotalInfoAnnotated.push(infoName);
+                    
+                    if(key=="e")
+                        {span.setAttribute("class", "coded_e");
+                        console.log('spane',span)
+                        span.classList.add("currentInfo");}
+                    else if(key=="i")
+                        {span.setAttribute("class", "coded_i");
+                        span.classList.add("currentInfo");}
+                    else if(key=="s")
+                        {span.setAttribute("class", "coded_s");
+                        span.classList.add("currentInfo");}
+                    else if(key=="t")
+                        {span.setAttribute("class", "coded_t");
+                        span.classList.add("currentInfo");}
+                    
+                    span.classList.add("coded");
+
+                    span.setAttribute("infoid", PromptInfoAnnotated.length);
+                    span.setAttribute("id", "prompt-annotation-" + PromptInfoAnnotated.length);
+                    span.setAttribute("prompt-info", infoName);
+                    span.setAttribute("start-token-index", startTok);
+                    span.setAttribute("end-token-index", endTok);
+                    if(key=="e")
+                        {span.setAttribute("prompt-category","explicit")}
+                    else if(key=="i")
+                        {span.setAttribute("prompt-category","implicit")}
+                    else if(key=="s")
+                        {span.setAttribute("prompt-category","suggested")}
+                    else if(key=="t")
+                        {span.setAttribute("prompt-category","third-party")}
+
+                    /* this is not considering the text before the span if any exists */
+                    let replaceMe = range.startOffset;
+                    
+                    
+                    PromptReplaceRange(range, span);
+                    infoStack.push("prompt");
+                }
+            }
+
+            if (keybinds["CATEGORY"].includes(key) && typeof selection != "undefined" && document.activeElement.id === "Response") {
+                console.log("INSIDE RESPONSE SELECT INFO")
+                addToHistory();
+                if (infoStack[infoStack.length-1]=='prompt' && ValidateInfoTypetext("dont show"))
+                {
+                    let span = document.getElementById("prompt-annotation-" + PromptInfoAnnotated.length);
+                    span.setAttribute("prompt-info-type", PreviousInfoTypeName);
+                    PromptPushState();
+
+                }
+                if ((ResponseInfoAnnotated.length) && !completeInfo())
+                {
+                    //console.log("rejected in response event selection complete info validation");
+                    return false;
+                }   
+
+                if (infoStack.length>=1)
+                {
+                    if(!ValidateInfoTypetext())
+                    {
+                        console.log("rejected in response event selection info stack check");
+                        return false;
+                    }
+                        
+                }
+                    
+                resetForm();
+                
+                if (selection.rangeCount) {
+                    
+                    let range = selection.getRangeAt(0);
+                    
+                    let start_node = range.startContainer.parentNode;
+                    let end_node = range.endContainer.parentNode;
+
+                    //console.log(start_node);
+                    //console.log(end_node);
+                    
+                    if (!ResponseValidateContainer(start_node) || !ResponseValidateContainer(end_node)) {
+                        if (typeof selection == "undefined") {
+                            selection.removeAllRanges();
+                        } else {
+                            selection.empty();
+                        }
+                        return;
+                    }
+                
+
+                    /* need index after this since we adjust the range here? */
+                    adjustStartOffset(range);
+                    adjustEndOffset(range);
+
+                    /* Which block are we in? */
+                    const rootEl   = document.activeElement.id === "Prompt"
+                                    ? document.getElementById("Prompt")
+                                    : document.getElementById("Response");
+
+                    /* Compute indices BEFORE we mutate the DOM */
+                    const startIdx = charOffset(rootEl, range.startContainer, range.startOffset);
+                    const endIdx   = charOffset(rootEl, range.endContainer, range.endOffset);   // exclusive
+
+                    //const tokens = getTokenMap(rootEl);
+
+                    /* Token indices that match word_tokenize() */
+                    const pTokens  = getWordTokenMap(rootEl);
+                    const startTok = pTokens.findIndex(t => startIdx >= t.start && startIdx < t.end);
+                    const endTok   = pTokens.findIndex(t => (endIdx - 1) >= t.start && (endIdx - 1) < t.end);
+
+                    let span = document.createElement("span");
+                    let text = extractText(range.cloneContents());
+                    let node = document.createTextNode(text);
+                    span.appendChild(node);
+                    
+                    setinfoName(text);
+                    document.querySelectorAll('[infoid="' + ResponseInfoAnnotated.length + '"]').forEach(el => el.classList.add("old"));
+                    document.querySelectorAll('[infoid="' + ResponseInfoAnnotated.length + '"]').forEach(el => el.classList.remove("currentInfo"));
+                    document.querySelectorAll('[infoid="' + PromptInfoAnnotated.length + '"]').forEach(el => el.classList.add("old"));
+                    document.querySelectorAll('[infoid="' + PromptInfoAnnotated.length + '"]').forEach(el => el.classList.remove("currentInfo"));
+                    console.log("pushing: "+infoName+" in RESPONSE-INFO-annotated");
+                    ResponseInfoAnnotated.push(infoName);
+                    TotalInfoAnnotated.push(infoName);
+                    
+                    if(key=="e")
+                        {span.setAttribute("class", "coded_e");
+                        span.classList.add("currentInfo");}
+                    else if(key=="i")
+                        {span.setAttribute("class", "coded_i");
+                        span.classList.add("currentInfo");}
+                    else if(key=="s")
+                        {span.setAttribute("class", "coded_s");
+                        span.classList.add("currentInfo");}
+                    else if(key=="t")
+                        {span.setAttribute("class", "coded_t");
+                        span.classList.add("currentInfo");}
+
+                    span.classList.add("coded");
+
+                    span.setAttribute("infoid", ResponseInfoAnnotated.length);
+                    span.setAttribute("id", "response-annotation-" + ResponseInfoAnnotated.length);
+                    span.setAttribute("response-info", infoName);
+                    span.setAttribute("start-token-index", startTok);
+                    span.setAttribute("end-token-index", endTok);
+                    if(key=="e")
+                        {span.setAttribute("response-category","explicit")}
+                    else if(key=="i")
+                        {span.setAttribute("response-category","implicit")}
+                    else if(key=="s")
+                        {span.setAttribute("response-category","suggested")}
+                    else if(key=="t")
+                        {span.setAttribute("response-category","third-party")}
+                    
+                    ResponseReplaceRange(range, span);
+                    //console.log("pushing info stack inside response");
+                    infoStack.push("response");
+                    //console.log("infoStack: "+infoStack);
+                }
+            }
+            console.log("______________________________________________________________")
+        }
+
+        /* this initiates the push to the stack for the annotation */
+        function completeInfo() {
+                //console.log("inside complete info")
+                var noPrompt = document.getElementById("noPrompt");
+                var noResponse = document.getElementById("noResponse");
+                
+
+                if (!PromptInfoAnnotated.length && !ResponseInfoAnnotated.length){
+                    if (noPrompt.checked && noResponse.checked){
+                        
+                        //console.log("No Annotation Made and Checkbox Clicked");
+                        document.getElementById('result-prompt').value = document.getElementById('Prompt').innerHTML;
+                        document.getElementById('result-response').value = document.getElementById('Response').innerHTML;
+                        document.getElementById('result-PROLIFIC_PID').value = document.getElementById('PROLIFIC_PID').innerHTML;
+                        document.getElementById('result-Prompt#').value = document.getElementById('Prompt#').innerHTML;
+                        addToHistory();
+                        return true;
+                    }
+                    else if(!noPrompt.checked && PromptInfoAnnotated.length==0)
+                    {
+                        
+                        //console.log("No Annotation made and checkbox not clicked");
+                        alert("Please check the \"The prompt does not contain any information to annotate\" box if you see no information for annotation");
+                        return false;
+                        
+                    }
+                    else if(!noResponse.checked && ResponseInfoAnnotated.length==0)
+                    {
+                        
+                        //console.log("No Annotation made and checkbox not clicked");
+                        alert("Please check the \"The response does not contain any information to annotate\" box if you see no information for annotation");
+                        return false;
+                    }
+                    //console.log("rejected inside prompt response info length checker");
+                    }
+
+                if(PromptInfoAnnotated.length == 0 && document.activeElement.id === "submitButton"){
+                    if(noResponse.checked && ResponseInfoAnnotated.length !=0)
+                    {
+                        alert("Please uncheck the \"The response does not contain any information to annotate\" box since you have annotation made");
+                        return false;
+                    }
+                    else if (noPrompt.checked){
+                        if (!ValidateInfoTypetext(""))
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                        //console.log("IN PROMPT CHECKBOX");
+                        //console.log("No Annotation Made and Checkbox Clicked");
+                        document.getElementById('result-prompt').value = document.getElementById('Prompt').innerHTML;
+                        document.getElementById('result-response').value = document.getElementById('Response').innerHTML;
+                        document.getElementById('result-PROLIFIC_PID').value = document.getElementById('PROLIFIC_PID').innerHTML;
+                        document.getElementById('result-Prompt#').value = document.getElementById('Prompt#').innerHTML;
+                        addToHistory();
+                        console.log("RETURN TRUE IN PROMPT");
+                        //return true;
+                        }
+                    }
+                    else{
+                        
+                        //console.log("No Annotation made and checkbox not clicked");
+                        alert("Please check the \"The prompt does not contain any information to annotate\" box if you see no information for annotation");
+                        return false;
+                    }
+                }
+                else{
+                    if(noPrompt.checked){
+                        //console.log("Annotation Made");
+                        alert("Please uncheck the \"The prompt does not contain any information to annotate\" box since you have annotation made");
+                        return false;
+                    }
+                }
+                if(ResponseInfoAnnotated.length == 0 && document.activeElement.id === "submitButton"){
+                    if(noPrompt.checked && PromptInfoAnnotated.length !=0)
+                    {
+                        alert("Please uncheck the \"The prompt does not contain any information to annotate\" box since you have annotation made");
+                        return false;
+                    }
+                    else if (noResponse.checked){
+                        if (!ValidateInfoTypetext(""))
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            //console.log("IN RESPONSE CHECKBOX");
+                            //console.log("No Annotation Made and Checkbox Clicked");
+                            document.getElementById('result-response').value = document.getElementById('Response').innerHTML;
+                            document.getElementById('result-prompt').value = document.getElementById('Prompt').innerHTML;
+                            document.getElementById('result-PROLIFIC_PID').value = document.getElementById('PROLIFIC_PID').innerHTML;
+                            document.getElementById('result-Prompt#').value = document.getElementById('Prompt#').innerHTML;
+                            //document.getElementById('result-response').value = document.getElementById('Response').innerHTML;
+                            addToHistory();
+                            console.log("RETURN TRUE IN RESPONSE");
+                            //return true;
+                        }
+                    }
+                    else
+                    {
+                        
+                        //console.log("No Annotation made and checkbox not clicked");
+                        alert("Please check the \"The response does not contain any information to annotate\" box if you see no information for annotation");
+                        return false;
+                    }
+                }
+                else{
+                    
+                    if(noResponse.checked){
+                        //console.log("Annotation Made");
+                        alert("Please uncheck the \"The response does not contain any information to annotate\" box since you have annotation made");
+                        return false;
+                    }
+                }
+
+
+                if (document.activeElement.id === "Prompt" && !PromptValidateInfoTypetext())
+                {
+                    //console.log("rejectected in complete info prompt box")
+                    return false;
+                }
+                else if(document.activeElement.id === "Response" && !ResponseValidateInfoTypetext())
+                {
+                    //console.log("rejectected in complete info response box")
+                    return false;
+                }
+                else if(document.activeElement.id === "submitButton" && !ValidateInfoTypetext())
+                {
+                    //console.log("rejectected in complete info submit box")
+                    return false;
+                }
+                
+                if(document.activeElement.id == "Prompt")
+                    {
+                        //console.log("pushing prompt state inside complete info");
+                        PromptPushState();
+                    }
+                
+                if(document.activeElement.id == "Response")
+                    {
+                        //console.log("pushing response state inside complete info");
+                        ResponsePushState();
+                    }
+                if(document.activeElement.id === "submitButton")
+                {
+                    //console.log(infoStack[infoStack.length-1]);
+                    if (infoStack[infoStack.length-1] == "prompt")
+                    {
+                        //console.log("inside prompt submit button info type atribute setter");
+                        let span = document.getElementById("prompt-annotation-" + PromptInfoAnnotated.length);
+                        span.setAttribute("prompt-info-type", document.querySelector('input[name="infoTypeText"]').value.trim());
+                    }
+                    if (infoStack[infoStack.length-1] == "response")
+                    {
+                        //console.log("inside response submit button info type atribute setter");
+                        let span2 = document.getElementById("response-annotation-" + ResponseInfoAnnotated.length);
+                        span2.setAttribute("response-info-type", document.querySelector('input[name="infoTypeText"]').value.trim());
+                    }
+                }
+                else if(document.activeElement.id == "Prompt")
+                {
+                    //console.log("if prompt")
+                    if(PreviousInfoTypeName!="" && document.getElementById("response-annotation-1")&& ResponseInfoAnnotated.length<=1&&infoStack[infoStack.length-1]=="response")
+                    {
+                        //console.log("PreviousInfoTypeName: "+PreviousInfoTypeName)
+                        //console.log("inside respose info type atribute setter for prompt 1");
+                        let span = document.getElementById("response-annotation-" + ResponseInfoAnnotated.length);
+                        span.setAttribute("response-info-type", document.querySelector('input[name="infoTypeText"]').value.trim());
+                        PreviousInfoTypeName = "";
+                
+                    }
+                    else if(PreviousInfoTypeName!="" && document.getElementById("response-annotation-" + ResponseInfoAnnotated.length)&&infoStack[infoStack.length-1]=="response")
+                    {
+                        //console.log("PreviousInfoTypeName: "+PreviousInfoTypeName)
+                        //console.log("inside respose info type atribute setter for prompt");
+                        let span = document.getElementById("response-annotation-" + ResponseInfoAnnotated.length);
+                        span.setAttribute("response-info-type", PreviousInfoTypeName);
+                        PreviousInfoTypeName = "";
+                
+                    }
+                    else
+                    {
+                        console.log("inside prompt info type atribute setter");
+                        let span = document.getElementById("prompt-annotation-" + PromptInfoAnnotated.length);
+                        span.setAttribute("prompt-info-type", document.querySelector('input[name="infoTypeText"]').value.trim());
+                        PreviousInfoTypeName = "";
+                    }
+                       
+                }
+                else if(document.activeElement.id == "Response")
+                {
+                    //console.log("if response")
+                    if(PreviousInfoTypeName!="" && document.getElementById("prompt-annotation-1") && PromptInfoAnnotated.length<=1 && infoStack[infoStack.length-1]=="prompt")
+                    {
+                        //console.log("PreviousInfoTypeName: "+PreviousInfoTypeName)
+                        //console.log("inside prompt info type atribute setter for response 1");
+                        let span = document.getElementById("prompt-annotation-" + PromptInfoAnnotated.length);
+                        span.setAttribute("prompt-info-type", document.querySelector('input[name="infoTypeText"]').value.trim());
+                        PreviousInfoTypeName = "";
+                
+                    }
+                    else if(PreviousInfoTypeName!="" && document.getElementById("prompt-annotation-" + PromptInfoAnnotated.length)&&infoStack[infoStack.length-1]=="prompt")
+                    {
+                        //console.log("PreviousInfoTypeName: "+PreviousInfoTypeName)
+                        console.log("inside prompt info type atribute setter for response: len "+PromptInfoAnnotated.length);
+                        let span = document.getElementById("prompt-annotation-" + PromptInfoAnnotated.length);
+                        span.setAttribute("prompt-info-type", PreviousInfoTypeName);
+                        PreviousInfoTypeName = "";
+                
+                    }
+                    else
+                    {
+                        //console.log("inside response info type atribute setter");
+                        let span2 = document.getElementById("response-annotation-" + ResponseInfoAnnotated.length);
+                        span2.setAttribute("response-info-type", document.querySelector('input[name="infoTypeText"]').value.trim());
+                        PreviousInfoTypeName = "";
+                    }
+                       
+                   
+                }
+                console.log("PROMPT-INFO-annotated: " + PromptInfoAnnotated);
+                console.log("RESPONSE-INFO-annotated: " + ResponseInfoAnnotated);
+                //document.getElementById('result-prompt').value = document.getElementById('Prompt').innerHTML;
+                //PromptPushState();
+                //console.log("infoStack: "+infoStack);
+                document.getElementById('result-prompt').value = document.getElementById('Prompt').innerHTML;
+                document.getElementById('result-response').value = document.getElementById('Response').innerHTML;
+                document.getElementById('result-PROLIFIC_PID').value = document.getElementById('PROLIFIC_PID').innerHTML;
+                document.getElementById('result-Prompt#').value = document.getElementById('Prompt#').innerHTML;
+                addToHistory();
+                return true;
+            
+        }
+        /* To validate the last info type text in the info stack */
+        function ValidatePreviousInfoTypetext(text)
+        {
+            text = text.toLowerCase();
+            infostacktempvalue = infoStack[infoStack.length-1].toLowerCase();
+            //console.log(text);
+            //console.log(infostacktempvalue);
+            if(text!=infostacktempvalue)
+            {
+                //console.log("rejected in last annotation infostack check");
+                return false;
+            }
+            return true;
+        }
+
+        /* To validate the any info type in the textbox */
+        function ValidateInfoTypetext(text) {
+            let infoValue = document.getElementById('infoTypeText').value.trim();
+            console.log("inside validate info text")
+            if (!infoValue || infoValue =="") {
+                if(text=="dont show")
+                {
+                    return false;
+                }
+                else{
+                alert("Information Type must be stated for the selected [ "+ infoName +" ] informaton.");
+                return false;}
+            }
+            return true;
+        }
+
+        /* To validate the prompt info type in the textbox */
+        function PromptValidateInfoTypetext() {
+                if (!PromptInfoAnnotated.length) {
+                    //console.log("rejected in prompt validation prompt info annotated length")
+                    alert("You must highlight a information type to label.");
+                    return false;
+                }
+                let infoValue = document.getElementById('infoTypeText').value.trim();
+
+                if (!infoValue || infoValue =="") {
+                    //console.log("rejected in prompt validation prompt info value")
+                    console.log("inside prompt validate info text")
+                    alert("Information Type must be stated for the selected [ "+ infoName +" ] informaton.");
+                    return false;
+                }
+                return true;
+        }
+
+        /* To validate the response info type in the textbox */
+        function ResponseValidateInfoTypetext() {
+                if (!ResponseInfoAnnotated.length) {
+                    //console.log("rejected in response validation response info annotated length")
+                    alert("You must highlight a information type to label.");
+                    return false;
+                }
+                let infoValue = document.getElementById('infoTypeText').value.trim();
+    
+                if (!infoValue || infoValue =="") {
+                    //console.log("rejected in response validation response info value")
+                    console.log("inside response validate info text")
+                    alert("Information Type must be stated for the selected [ "+ infoName +" ] informaton.");
+                    return false;
+                }
+                return true;            
+        }
+        function noNer() {
+            var checkbox = document.getElementById("noNer");
+            var span = document.getElementById("info_p" + focus_index);
+            if (checkbox.checked) {
+                span.className = "coded_i noaction";
+            } else {
+                span.className = "coded_i";
+            }
+
+            var result_prompt = document.getElementById('Prompt').innerHTML;
+            var result_response = document.getElementById('Response').innerHTML;
+            document.getElementById('result-prompt').value = result_prompt;
+            document.getElementById('result-response').value = result_response;
+            document.getElementById('result-PROLIFIC_PID').value = document.getElementById('PROLIFIC_PID').innerHTML;
+            document.getElementById('result-Prompt#').value = document.getElementById('Prompt#').innerHTML;
+            addToHistory();
+
+        }
+
+        function PromptValidateContainer(node) {
+            while (node != null) {
+                if (node.id === "Prompt") {
+                    return true;
+                }
+                node = node.parentNode;
+            }
+            return false;
+        }
+        function ResponseValidateContainer(node) {
+            while (node != null) {
+                if (node.id === "Response") {
+                    return true;
+                }
+                node = node.parentNode;
+            }
+            return false;
+        }
+
+        /* change the start position of the selection if any punctuation is included */
+        function adjustStartOffset(range) {
+            var text = range.startContainer.data;
+            var i = range.startOffset - 1;
+
+            // if in a word, move the start offset backwards
+            if (text.charAt(i).match(/\S/)) {
+                while (i >= 0 && text.charAt(i).match(/\S/) && !text.charAt(i).match(/\s|\p{P}/u)) {
+                    i--;
+                }
+                i++; // advance to start of first character
+            } else {
+                // if in a space, move the start offset forwards
+                while (i < text.length - 1 && (text.charAt(i).match(/\s/) || text.charAt(i).match(/\p{P}/u))) {
+                    i++;
+                }
+            }
+            // sanity check the bounds
+            if (i > text.length) {
+                i = text.length;
+            }
+            if (i < 0) {
+                i = 0;
+            }
+
+            if (i != range.startOffset) {
+                range.setStart(range.startContainer, i);
+            }
+        }
+
+        /* change the end position of the selection if any punctuation is included */
+        function adjustEndOffset(range) {
+            let text = range.endContainer.data;
+            let i = range.endOffset - 1;
+            let textLength = text.length - 1;
+
+            if (range.endContainer.parentElement.tagName === "SPAN")
+                textLength++;
+
+            let clonedSelection = range.cloneContents();
+            let subSpan = clonedSelection.querySelector('span');
+            if (subSpan){
+                let selection = window.getSelection();
+                range = document.createRange();
+                selection.removeAllRanges();
+                range.selectNodeContents(subSpan);
+                selection.addRange(range);
+                return;
+            }
+
+            if (text.charAt(i).match(/\S/)) {
+                while (i < textLength && text.charAt(i).match(/\S/) && (!text.charAt(i).match(/\s|\p{P}/u) || text.charAt(i) === '%' || 
+                ((text.charAt(i) === "'" ||  text.charAt(i) === '"' || text.charAt(i) === "’" ||  text.charAt(i) === '”')  
+                && i > 0
+                && i + 1 < text.length
+                && /\d/.test(text.charAt(i - 1))
+                
+                ))) 
+                {
+                    i++;
+                }
+            } else {
+                while (i > 0 && (text.charAt(i).match(/\s/) || text.charAt(i).match(/\p{P}/u))) {
+                    i--;
+                }
+                i++;
+            }
+
+            if (i > text.length) {
+                i = text.length;
+            }
+            if (i < 0) {
+                i = 0;
+            }
+
+            if (i !== range.endOffset) {
+                range.setEnd(range.endContainer, i);
+            }
+        }
+
+        /* cache so we don’t rebuild on every keystroke */
+        //const tokenCache = {};
+        const tokenMapCache = {};
+
+        /* The same regexp NLTK uses under the hood */
+        /*const WORD_TOKENIZER_REGEX =
+        /(?:[A-Za-z]\.)+|(?:\d+(?:\.\d+)?%?)|(?:\w+(?:[-']\w+)*)|(?:\.\.\.)|[.,!?;:()"'“”‘’]/g;*/
+        const WORD_TOKENIZER_REGEX = /(?:\w+|[^\w\s]+)/g;
+
+        function getWordTokenMap(rootEl) {
+            if (tokenMapCache[rootEl.id]) return tokenMapCache[rootEl.id];
+
+            const text   = rootEl.textContent;
+            const tokens = [];
+            let   m;
+            while ((m = WORD_TOKENIZER_REGEX.exec(text)) !== null) {
+                tokens.push({ start: m.index, end: WORD_TOKENIZER_REGEX.lastIndex }); // end exclusive
+            }
+            tokenMapCache[rootEl.id] = tokens;
+            return tokens;
+            }
+        /* Builds (or returns from cache) an array [{start, end},...] giving the 0-based character span of every whitespace-delimited token in rootEl. 'end' is exclusive. 
+        function getTokenMap(rootEl) {
+        if (tokenCache[rootEl.id]) return tokenCache[rootEl.id];
+
+        const text   = rootEl.textContent;     // plain text, no markup
+        const regex  = /\S+/g;                 // one or more non-spaces
+        const tokens = [];
+        let   match;
+        while ((match = regex.exec(text)) !== null) {
+            tokens.push({ start: match.index, end: regex.lastIndex });
+        }
+        tokenCache[rootEl.id] = tokens;
+        return tokens;
+        } */
+
+        /* Returns the character offset (0-based, counting visible text only) from the beginning of rootEl to container/offset. */
+        function charOffset(rootEl, container, offset) {
+        const r = document.createRange();
+        r.selectNodeContents(rootEl);          // start of paragraph
+        r.setEnd(container, offset);           // cursor position
+        return r.toString().length;            // plain-text length
+        }
+
+        function extractText(frag) {
+            
+            var node, text = "";
+            var walk = document.createTreeWalker(frag, NodeFilter.SHOW_TEXT, null, false);
+            while (node = walk.nextNode()) {
+                text += " " + node.data;
+            }
+            return text.trim();
+        }
+
+        function clearLast() {
+            if(getLastAction()==="prompt")
+            {
+                if(PromptStateStack.length >= 1 && infoStack[infoStack.length-2]=="response")
+                {
+                    console.log("popping:"+getLastAction())
+                    ResponsePopState("dont");
+                    PromptPopState("do");
+                }
+                else if (PromptStateStack.length == 1)
+                {
+                    return false;
+                }
+                else
+                {
+                    console.log("else popping:"+getLastAction())
+                    PromptPopState("do");
+                }
+            }
+            else if(getLastAction()==="response")
+            {
+                if(ResponseStateStack.length >= 1 && infoStack[infoStack.length-2]=="prompt")
+                {
+                    console.log("popping:"+getLastAction())
+                    ResponsePopState("do");
+                    PromptPopState("dont");
+                }
+                else if (ResponseStateStack.length == 1)
+                {
+                    return false;
+                }
+                else
+                {
+                    console.log("else popping:"+getLastAction())
+                    ResponsePopState("do");
+                }
+            }
+
+        }
+
+        function clearAll() {
+            setinfoName();
+            PromptInfoStack = [];
+            ResponseInfoStack = [];
+            PromptInfoAnnotated = [];
+            ResponseInfoAnnotated = [];
+            TotalInfoAnnotated = [];
+            infoStack = [];
+
+            resetForm();
+
+            PromptStateStack.length = 1;
+            ResponseStateStack.length = 1;
+            document.getElementById('Prompt').innerHTML = PromptStateStack[0];
+            document.getElementById('Response').innerHTML = ResponseStateStack[0];
+            debugPrint("# CLEAR ALL #");
+            return true;
+        }
+
+        function resetForm() {
+            document.getElementById('infoTypeText').value=""
+        }
+
+        function handleKeyPress(event) {
+            selectInfo(event);
+            //selectArg(event);
+        }
+
+        window.onload = function () {
+            checkBrowser();
+            PromptPushState();
+            console.log("promptstate: "+PromptStateStack);
+            ResponsePushState();
+            console.log("responsestate: "+ResponseStateStack);
+            document.addEventListener("keyup", function (event) {
+                // Check if the event target is an input, infoTypeText, or contenteditable element
+                if (event.target.matches('input, infoTypeText, [contenteditable="true"]')) {
+                    return; // user is typing text; do nothing
+                } else {
+                    // Get the selected text
+                    var selectedText = window.getSelection().toString();
+            
+                    // If no text is selected, prevent the keypress action
+                    if (selectedText === "") {
+                        event.preventDefault();
+                        //alert("Please highlight some text first!");
+                    } else {
+                        // If text is selected, call the handleKeyPress function
+                        handleKeyPress(event);
+                    }
+                }
+            });
+            
+        }
+
+        function toggleParagraphIntroduction() {
+            console.log("Working Introduction");
+            var paragraph1 = document.getElementById("introductionParagraph");
+            if (paragraph1.style.display === "block") {
+                paragraph1.style.display = "none";
+            } else {
+                paragraph1.style.display = "block";
+            }
+        }
+
+        function toggleParagraphInstruction() {
+            console.log("Working Instruction");
+            let paragraph2 = document.getElementById("instructionParagraph");
+            if (paragraph2.style.display === "block") {
+                paragraph2.style.display = "none";
+            } else {
+                paragraph2.style.display = "block";
+            }
+        }
+
+        function toggleParagraphKeyInstruction() {
+            console.log("Working Key Instruction");
+            let paragraph3 = document.getElementById("instructionKeyParagraph");
+            if (paragraph3.style.display === "block") {
+                paragraph3.style.display = "none";
+            } else {
+                paragraph3.style.display = "block";
+            }
+        }
+        function toggleParagraphInfoExample() {
+            console.log("Working Key Instruction");
+            let paragraph3 = document.getElementById("InfoExampleParagraph");
+            if (paragraph3.style.display === "block") {
+                paragraph3.style.display = "none";
+            } else {
+                paragraph3.style.display = "block";
+            }
+        }
+
+    </script>
+</head>
+
+<crowd-form answer-format="flatten-objects">
+    <div class="primaryContainer">
+        <div class="row">
+            <div class="col-md-7">                
+                <div class="taskInstructions">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading" style="text-align: center; cursor: pointer; align-items: center;"
+                             onclick="toggleParagraphInstruction()">
+                            <strong>
+                                Instructions for the Annotation Task <span style="font-size: 11px;">(Click to expand)</span>
+                            </strong>
+                        </div>
+                        <div class="instructions hideable" id="instructionParagraph">
+                            <p><b>
+                                To begin the annotation, please follow the instructions below.
+                            </b></p>
+                            <p>
+                                <ul>
+                                    <li>
+                                      You will see a ChatGPT <em>prompt–response</em> pair.
+                                    </li>
+                                  
+                                    <li>
+                                      Read every sentence in the <strong>Prompt</strong> first, then read every sentence in the
+                                      <strong>Response</strong>.
+                                    </li>
+                                  
+                                    <li>
+                                      To annotate <strong>personal information</strong> (see <em>"Personal Information Examples"</em> for definition):
+                                      <ul>
+                                        <li>Highlight the relevant word or phrase that constitutes <em>personal information</em>.</li>
+                                        <li>
+                                            Press the corresponding keys for the correct <em>personal information category.</em>(see <em>"Key Instruction"</em> for more details).
+                                        </li>    
+                                        <ul class="v-space">
+                                            <li>Press <span class="coded_e coded">"e"</span> to annotate the highlighted text as <em>"explicit"</em>.</li>
+                                            <li>Press <span class="coded_i coded">"i"</span> to annotate the highlighted text as <em>"implicit"</em>.</li>
+                                            <li>Press <span class="coded_s coded">"s"</span> to annotate the highlighted text as <em>"suggested"</em>.</li>
+                                            <li>Press <span class="coded_t coded">"t"</span> to annotate the highlighted text as <em>"third-party"</em>.</li>
+                                        </ul>
+                                        <li>
+                                          In the <em><strong>"Type of personal information:"</strong></em> text box, enter the
+                                          appropriate <em>information type</em> (see <em>"Personal Information Examples"</em>).
+                                        </li>
+                                      </ul>
+                                    </li>
+                                  
+                                    <li>
+                                      Continue annotating all instances of personal information in both
+                                      <strong>Prompt</strong> and the <strong>Response</strong>.
+                                    </li>
+                                    <li>
+                                        The <strong><em>"History of annotated personal information types:"</em></strong> list will fill automatically as you annotate.
+                                        </li>
+                                    <li>
+                                      When you have finished annotating both the prompt and the response, click
+                                      <strong><em>Submit&nbsp;Task</em></strong>.
+                                    </li>
+                                    
+                                    <li>
+                                      <strong>No annotations?</strong>
+                                      <ul>
+                                        <li>
+                                          If the <strong>prompt</strong> contains no personal information to annotate, tick the
+                                          checkbox <em><strong>“The prompt does not contain any information to annotate.”</strong></em>
+                                        </li>
+                                        <li>
+                                          If the <strong>response</strong> contains no personal information to annotate, tick the
+                                          checkbox <em><strong>“The response does not contain any information to annotate.”</strong></em>
+                                        </li>
+                                      </ul>
+                                    </li>
+                                  
+                                  </ul>
+                            <p>
+                                <strong>NOTE: Do not overlap annotations.</strong> If you need to annotate 
+                                an instance that is contained within another instance you want to annotate,
+                                annotate the longer instance first to avoid duplication.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="BoxForExamples">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading"
+                            onclick="toggleParagraphInfoExample()">
+                            <strong>
+                                Personal Information Examples <span style="font-size: 11px;">(Click to expand)</span>
+                            </strong>
+                        </div>
+                        <div class="panel-body instructionKeyParagraph hideable" id="InfoExampleParagraph">
+                            <p style="font-size: 12px; text-align: justify; line-height: 1.5;">
+                              <b>Personal information</b> is defined as any information relating to an identified or
+                              identifiable natural person, also known as a "data subject". This means it encompasses any information
+                            that, on its own or when combined with other data, can be used to
+                            identify a specific individual.
+                            </p>   
+                            <p style="font-size: 12px;">Here are some <em>examples</em> of the <b><em>personal information</em></b> you might see in the prompt-response pair. Each <b><em>personal information instance</em></b> can belong to a specific category. Additional examples of personal information instances and categories are provided below:</p>
+                            <ul style="font-size: 12px;">
+                                <li>Maria T. Alvarez: <b>Name</b></li>
+                                <li>king.khan2000@gmail.com: <b>Email address</b></li>
+                                <li>27 years old: <b>Age</b></li>
+                                <li>Houston, Texas: <b>Location</b></li>
+                                <li>1600 Pennsylvania Ave NW, Washington, DC 20500: <b>Address</b></li>
+                                <li>B.Sc. Electrical Engineering: <b>Degree</b></li>
+                                <li>Software Engineer at Google: <b>Occupation</b></li>
+                                <li>Annual salary $85000: <b>Income</b></li>
+                                <li>Bank account No. 987654321 (Wells Fargo): <b>Bank account information</b></li>
+                                <li>Visa card ending 4432: <b>Financial card information</b></li>
+                                <li>FICO score 742: <b>Credit score</b></li>
+                                <li>Married, single: <b>Marital status</b></li>
+                                <li>Son, wife, daughter: <b>Family information</b></li>
+                                <li>Rent, own a home, homeowner: <b>Living situation</b></li>
+                                <li>Depression: <b>Mental Health</b></li>
+                                <li>Hispanic: <b>Ethnic origin</b></li>
+                                <li>Registered Democrat: <b>Political opinions</b></li>
+                                <li>Muslim: <b>Religion</b></li>
+                            </ul>
+                          </div>
+                          
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="BoxForInstruction">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading"
+                            onclick="toggleParagraphKeyInstruction()">
+                            <strong>
+                                Key Instruction <span style="font-size: 11px;">(Click to expand)</span>
+                            </strong>
+                        </div>
+                        <div class="panel-body instructionKeyParagraph hideable" id="instructionKeyParagraph">
+                            <p style="font-size: 12px; text-align: justify; line-height: 1.5;">
+                                There are four <strong><em>personal information categories</em></strong> you'll encounter: explicit, implicit, and suggested. 
+                                Each category has its own keyboard shortcut (key). The definitions, shortcuts, and examples are below.
+                            </p>
+                            <table align="center">
+                                <tr style="border-bottom: none;">
+                                    <td align="center" style="padding-top: 1%;">
+                                        <p><b><span class="coded coded_e"
+                                                    style="font-size: 12px;;">Explicit</span></b></p>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: none;">
+                                    <td style="border-bottom: none;">
+                                        <p style="font-size: 12px; text-align: justify; line-height: 1.5; padding-left:10; padding-right:10; padding-top: 3;"><b>Explicit category</b> 
+                                            refers to personal information that is stated directly in the text. 
+                                            To annotate, highlight the personal information instance and <b><u>press "e"</u></b>.<br>
+                                            <b>For example: </b>In sentence <em>"The <span class="coded coded_e">rent amount is $1200 per month.</span>"</em>, the highlighted phrase is <em>"explicit"</em> category. Its personal information type is <em>"rent amount per month"</em>.
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: none;">
+                                    <td align="center" style="padding-top: 1%;">
+                                        <p><b><span class="coded coded_i" style="font-size: 12px;">Implicit</span></b></p>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: none;">
+                                    <td style="border-bottom: none;">
+                                       <p style="font-size: 12px; text-align: justify; line-height: 1.5; padding-left:10;  padding-right:10; padding-top: 3;"><b>Implicit category</b> refers to personal infromation not stated outright but inferable from context. 
+                                        To annotate, highlight the personal information instance and <b><u>press "i"</u></b>.<br>
+                                            <b>For example:</b> In sentence <em>"The <span class="coded coded_i">rent</span> amount is $1200 per month."</em>, the highlighted word reveals the person's <em>living situation</em> (renting vs owning).
+                                             <span class="coded coded_i">"rent"</span> is therefore an <em>"implicit"</em> category. Its personal information type is <em>"living situation"</em>.
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: none;">
+                                    <td align="center" style="padding-top: 1%;">
+                                        <p><b><span class="coded coded_s" style="font-size: 12px;">Suggested</span></b></p>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: none;">
+                                    <td style="border-bottom: none;">
+                                        <p style="font-size: 12px; text-align: justify; line-height: 1.5; padding-left:10;  padding-right:10; padding-top: 3;"><b>Suggested category</b> refers to personal information (explicit or implicit) that ChatGPT recommends or suggests in its response.
+                                            To annotate, highlight the personal information instance and <b><u>press "s"</u></b>.<br>
+                                            <b>For example:</b> In sentence <em>"For a memorable dinner, you might like <span class="coded coded_s">Odd Duck</span> or <span class="coded coded_s">Lenoir</span> - they are both well-known."</em>, the highlighted words are <em>"suggested"</em> categories. Their personal information type are <em>"activity location"</em> for both.
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: none;">
+                                    <td align="center" style="padding-top: 1%;">
+                                        <p><b><span class="coded coded_t" style="font-size: 12px;">Third-party</span></b></p>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: none;">
+                                    <td style="border-bottom: none;">
+                                        <p style="font-size: 12px; text-align: justify; line-height: 1.5; padding-left:10;  padding-right:10; padding-top: 3;"><b>Third-party category</b> refers to personal information (explicit) of any natural or legal person, public authority, agency, or
+                                            body other than the data subject, controller, or processor, and
+                                            those acting under their direct authority. Essentially, it's anyone
+                                            who isn't directly involved in the core processing of personal data
+                                            but might still have a role or access to it.
+                                            To annotate, highlight the personal information instance and <b><u>press "t"</u></b>.<br>
+                                            <b>For example:</b> In sentence <em>"My nephew <span class="coded coded_t">Cam</span> is <span class="coded coded_t">19-years-old</span>."</em>, the highlighted words are <em>"third-party"</em> categories. Their personal information type are <em>"name"</em> and <em>"age"</em> respectively.
+                                        </p>
+                                    </td>
+                                </tr>                                                     
+                            </table>
+                          </div>
+                          
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="paragraphContainer">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <strong>
+                                Annotation Task -
+                            </strong>
+                            <strong style="justify-content: right;">
+                                <span >Currently selected word or phrase <span id="labelTitle"></span></span>
+                            </strong>
+                        </div>
+                        <div id="PROLIFIC_PID" hidden>66f0bedd10cc3ac59f4f0d7e</div>
+                        <div id="Prompt#" hidden>4</div>
+                        <div class="panel-body PromptPanel"> 
+                            <div class="PromptBox">
+                                <!-- Header for Prompt Box -->
+                                <div class="header">Prompt</div>
+                                <div class="content" id="Prompt" tabindex="0">
+                                    I make around $45,000 a year and live in New York City. Is that enough to afford rent and save?
+                                </div>
+                                </div>
+                        
+                            <!-- Response Box with Right Alignment -->
+                            <div class="ResponseBox">
+                                <!-- Header for Response Box -->
+                                <div class="header">Response</div>
+                                <div class="content"  id="Response" tabindex="0">
+                                NYC can be pricey, but it depends on your lifestyle and budgeting. A common rule is not to spend more than 30% of your income on rent — so around $1,125/month. You might consider shared housing or outer boroughs like Queens or the Bronx. With strict budgeting, saving a small amount monthly is possible, but you&#x27;ll need to track expenses carefully.
+                            </div>
+                                
+                                </div>
+
+                            <br>
+                            <div class="panel-body" style="padding-top: 2px; padding-bottom: 2px; line-height: 0.3;">
+                            History of annotated personal information types:
+                            <div id="historyContainer" class="history-grid"></div>
+                            </div>
+                            <div class="panel-body" style="padding-top: 8px;">
+                                Type of personal information:
+                                <input  type="text"
+                                        id="infoTypeText"
+                                        name="infoTypeText"
+                                        class="form-control"/>
+                                        
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <label>
+                                    <input id="noPrompt" name="noPrompt" type="checkbox"/>
+                                    The prompt does not contain any information to annotate.
+                                </label>
+                                <label>
+                                    <input id="noResponse" name="noResponse" type="checkbox"/>
+                                    The response does not contain any information to annotate.
+                                </label>
+                            </div>
+                            <table align="right" class="table2">
+                                <tbody>
+                                <tr>
+                                    <td align="center" class="table2" height="20" width="100">
+                                        <input name =" " class="btn btn-warning" onclick="clearLast()" type="button"
+                                               value="Clear Last"/></td>
+                                    <td align="center" class="table2" height="20" width="100">
+                                        <input name =" " class="btn btn-danger" onclick="clearAll()" style="font-size:0.9em;"
+                                               type="button"
+                                               value="Clear All"/></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <input id="result-PROLIFIC_PID" name="result-PROLIFIC_PID" type="hidden" value=""/>
+                            <input id="result-Prompt#" name="result-Prompt#" type="hidden" value=""/>
+                            <input id="result-prompt" name="result-prompt" type="hidden" value=""/>
+                            <input id="result-response" name="result-response" type="hidden" value=""/>
+                            <div>
+                                <input name ="SubmitTask" class="btn btn-success" id="submitButton" onclick="return completeInfo()"
+                                       type="submit" value="Submit Task"/>&nbsp;
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>               
+        </div>
+    </div>
+</crowd-form>
